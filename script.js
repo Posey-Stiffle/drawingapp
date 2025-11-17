@@ -37,7 +37,6 @@ function draw() {
   }
 
   if (mouseIsPressed) {
-    // draw only if mouse pressed
     if (choice !== '9') newkeyChoice(choice);
   }
 
@@ -57,8 +56,10 @@ function newkeyChoice(toolChoice) {
   }
 
   if (toolChoice === '1' || toolChoice === '2' || toolChoice === '3' || toolChoice === '4' || toolChoice === '-') {
+    // make eraser use biggest brush size
+    const currentSize = usingEraser ? 40 : brushSize;
     layer.stroke(usingEraser ? color(screenbg) : brushColor);
-    layer.strokeWeight(brushSize);
+    layer.strokeWeight(currentSize);
     layer.line(mouseX, mouseY, pmouseX, pmouseY);
 
   } else if (toolChoice === '6') {
