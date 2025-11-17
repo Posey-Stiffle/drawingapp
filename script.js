@@ -1,16 +1,15 @@
 var img;
-var initials = 'jm'; // your initials
-var choice = '1';    // starting tool
-var screenbg = 250;  // off white background
-var lastscreenshot = 61; // last screenshot never taken
+var initials = 'jm';
+var choice = '1';
+var screenbg = 250;
+var lastscreenshot = 61;
 
-// --- drawing state ---
-let layer;                 // offscreen buffer we draw on
-let undoStack = [];        // stack of snapshots for undo
+let layer;
+let undoStack = [];
 const UNDO_LIMIT = 25;
 
 let brushColor;
-let brushSize = 6;         // default; will be set by 1–4 keys
+let brushSize = 6;
 let rainbowHue = 0;
 
 function preload() {
@@ -21,24 +20,22 @@ function setup() {
   createCanvas(1200, 800); // larger canvas
   layer = createGraphics(1200, 800);
   background(screenbg);
-  brushColor = color(0); // black default
-  setBrushFromKey('1');  // initialize size
+  brushColor = color(0);
+  setBrushFromKey('1');
 }
 
 function draw() {
-  // key handling
   if (keyIsPressed) {
-    choice = key;          // current tool = pressed key
-    clear_print();         // handle clear/save/undo
-    special_keys();        // handle random color, background change
+    choice = key;
+    clear_print();
+    special_keys();
   }
 
-  // drawing
   if (mouseIsPressed) {
-    newkeyChoice(choice);
+    // draw only if mouse pressed
+    if (choice !== '9') newkeyChoice(choice);
   }
 
-  // display the drawing
   background(screenbg);
   image(layer, 0, 0);
 }
@@ -50,27 +47,23 @@ function newkeyChoice(toolChoice) {
 
   const usingEraser = (toolChoice === '-');
 
-  // map 1–4 to sizes
   if (toolChoice >= '1' && toolChoice <= '4') {
     setBrushFromKey(toolChoice);
   }
 
-  // 1–4 = brushes / eraser
   if (toolChoice === '1' || toolChoice === '2' || toolChoice === '3' || toolChoice === '4' || toolChoice === '-') {
     layer.stroke(usingEraser ? color(screenbg) : brushColor);
     layer.strokeWeight(brushSize);
     layer.line(mouseX, mouseY, pmouseX, pmouseY);
 
   } else if (toolChoice === '6') {
-    // random translucent squares
     const s = random(8, 28);
     const c = color(random(255), random(255), random(255), 110);
     layer.noStroke();
     layer.fill(c);
-    layer.rect(mouseX - s/2, mouseY - s/2, s, s);
+    layer.rect(mouseX - s / 2, mouseY - s / 2, s, s);
 
   } else if (toolChoice === '7') {
-    // spray paint
     const radius = brushSize * 2;
     layer.noStroke();
     layer.fill(brushColor);
@@ -83,7 +76,6 @@ function newkeyChoice(toolChoice) {
     }
 
   } else if (toolChoice === '8') {
-    // soft marker
     layer.noStroke();
     const c = color(red(brushColor), green(brushColor), blue(brushColor), 80);
     layer.fill(c);
@@ -96,7 +88,6 @@ function newkeyChoice(toolChoice) {
     }
 
   } else if (toolChoice === '0') {
-    // calligraphy oval brush
     layer.noStroke();
     const ang = radians(25);
     const w = brushSize * 2.4;
@@ -117,13 +108,7 @@ function newkeyChoice(toolChoice) {
     }
     layer.pop();
 
-  } else if (toolChoice === '9') {
-    // change background color to random
-    screenbg = color(random(255), random(255), random(255));
-    background(screenbg);
-
   } else if (toolChoice === 'g' || toolChoice === 'G') {
-    // place preloaded image
     layer.image(img, mouseX, mouseY, 50, 50);
   }
 }
@@ -140,6 +125,11 @@ function special_keys() {
   // 5 = random brush color
   if (key === '5') {
     brushColor = color(random(255), random(255), random(255));
+  }
+
+  // 9 = change background ONCE when pressed
+  if (key === '9') {
+    screenbg = color(random(255), random(255), random(255));
   }
 }
 
@@ -168,11 +158,11 @@ function undo() {
   }
 }
 
-function saveme(){
+function saveme() {
   filename = initials + day() + hour() + minute() + second();
   if (second() != lastscreenshot) {
     saveCanvas(filename, 'jpg');
-    key = "";
+    key = '';
   }
   lastscreenshot = second();
 }
