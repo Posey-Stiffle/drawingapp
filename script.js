@@ -12,6 +12,10 @@ let brushColor;
 let brushSize = 6;
 let rainbowHue = 0;
 
+// background cooldown
+let lastBgChange = 0;
+const BG_COOLDOWN = 5000; // 5 seconds
+
 function preload() {
   img = loadImage('https://dma-git.github.io/images/74.png');
 }
@@ -22,6 +26,7 @@ function setup() {
   background(screenbg);
   brushColor = color(0);
   setBrushFromKey('1');
+  lastBgChange = -BG_COOLDOWN; // allow first background change immediately
 }
 
 function draw() {
@@ -127,9 +132,13 @@ function special_keys() {
     brushColor = color(random(255), random(255), random(255));
   }
 
-  // 9 = change background ONCE when pressed
+  // 9 = change background at most once every 5 seconds
   if (key === '9') {
-    screenbg = color(random(255), random(255), random(255));
+    const now = millis();
+    if (now - lastBgChange >= BG_COOLDOWN) {
+      screenbg = color(random(255), random(255), random(255));
+      lastBgChange = now;
+    }
   }
 }
 
