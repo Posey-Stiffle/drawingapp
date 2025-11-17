@@ -14,59 +14,55 @@ let brushSize = 6;         // default; will be set by 1–4 keys
 let rainbowHue = 0;
 
 function preload() {
-  // preload() runs once
   img = loadImage('https://dma-git.github.io/images/74.png');
 }
 
 function setup() {
-  createCanvas(600, 400);
-  layer = createGraphics(600, 400);
+  createCanvas(1200, 800); // larger canvas
+  layer = createGraphics(1200, 800);
   background(screenbg);
-  brushColor = color(0); // black by default
+  brushColor = color(0); // black default
   setBrushFromKey('1');  // initialize size
 }
 
 function draw() {
   // key handling
   if (keyIsPressed) {
-    choice = key;          // set current tool to key pressed
-    clear_print();         // handle clear / save / undo
-    special_keys();        // handle color randomizer (5) etc.
+    choice = key;          // current tool = pressed key
+    clear_print();         // handle clear/save/undo
+    special_keys();        // handle random color, background change
   }
 
-  // draw while dragging
+  // drawing
   if (mouseIsPressed) {
     newkeyChoice(choice);
   }
 
-  // compose to screen
+  // display the drawing
   background(screenbg);
   image(layer, 0, 0);
 }
 
 /* ------------ tools -------------- */
 function newkeyChoice(toolChoice) {
-  // Draw onto the layer, not the main canvas
   layer.noFill();
   layer.noStroke();
 
-  // compute stroke color for current tool
   const usingEraser = (toolChoice === '-');
 
-  // map brushes 1–4 to sizes
+  // map 1–4 to sizes
   if (toolChoice >= '1' && toolChoice <= '4') {
     setBrushFromKey(toolChoice);
   }
 
-  // tool implementations
+  // 1–4 = brushes / eraser
   if (toolChoice === '1' || toolChoice === '2' || toolChoice === '3' || toolChoice === '4' || toolChoice === '-') {
-    // Basic round brush or Eraser
     layer.stroke(usingEraser ? color(screenbg) : brushColor);
     layer.strokeWeight(brushSize);
     layer.line(mouseX, mouseY, pmouseX, pmouseY);
 
   } else if (toolChoice === '6') {
-    // Random translucent squares
+    // random translucent squares
     const s = random(8, 28);
     const c = color(random(255), random(255), random(255), 110);
     layer.noStroke();
@@ -74,7 +70,7 @@ function newkeyChoice(toolChoice) {
     layer.rect(mouseX - s/2, mouseY - s/2, s, s);
 
   } else if (toolChoice === '7') {
-    // Spray paint (random dots in a radius)
+    // spray paint
     const radius = brushSize * 2;
     layer.noStroke();
     layer.fill(brushColor);
@@ -87,7 +83,7 @@ function newkeyChoice(toolChoice) {
     }
 
   } else if (toolChoice === '8') {
-    // Soft round marker (semi-transparent filled circles)
+    // soft marker
     layer.noStroke();
     const c = color(red(brushColor), green(brushColor), blue(brushColor), 80);
     layer.fill(c);
@@ -99,18 +95,8 @@ function newkeyChoice(toolChoice) {
       layer.circle(x, y, brushSize * 2);
     }
 
-  } else if (toolChoice === '9') {
-    // Rainbow line (cycles colors)
-    colorMode(HSB, 360, 100, 100, 255);
-    const rainbow = color((rainbowHue % 360), 90, 90, 255);
-    colorMode(RGB, 255, 255, 255, 255);
-    layer.stroke(rainbow);
-    layer.strokeWeight(max(2, brushSize));
-    layer.line(mouseX, mouseY, pmouseX, pmouseY);
-    rainbowHue += 2;
-
   } else if (toolChoice === '0') {
-    // Calligraphy oval brush (angled ovals along path)
+    // calligraphy oval brush
     layer.noStroke();
     const ang = radians(25);
     const w = brushSize * 2.4;
@@ -131,15 +117,19 @@ function newkeyChoice(toolChoice) {
     }
     layer.pop();
 
+  } else if (toolChoice === '9') {
+    // change background color to random
+    screenbg = color(random(255), random(255), random(255));
+    background(screenbg);
+
   } else if (toolChoice === 'g' || toolChoice === 'G') {
-    // place the preloaded image
+    // place preloaded image
     layer.image(img, mouseX, mouseY, 50, 50);
   }
 }
 
 /* ------------ helpers -------------- */
 function setBrushFromKey(k) {
-  // 1 smallest, 2 middle, 3 bigger, 4 biggest
   if (k === '1') brushSize = 4;
   else if (k === '2') brushSize = 12;
   else if (k === '3') brushSize = 24;
@@ -147,26 +137,24 @@ function setBrushFromKey(k) {
 }
 
 function special_keys() {
-  // 5: randomize brush color (no drawing)
+  // 5 = random brush color
   if (key === '5') {
     brushColor = color(random(255), random(255), random(255));
   }
 }
 
 function clear_print() {
-  // x clears; p saves; + undoes
   if (key === 'x' || key === 'X') {
     layer.clear();
     background(screenbg);
   } else if (key === 'p' || key === 'P') {
-    saveme();  // from template
+    saveme();
   } else if (key === '+') {
     undo();
   }
 }
 
 function pushUndo() {
-  // store current layer snapshot
   const snap = layer.get();
   undoStack.push(snap);
   if (undoStack.length > UNDO_LIMIT) undoStack.shift();
@@ -180,9 +168,7 @@ function undo() {
   }
 }
 
-/* Save behavior from template */
 function saveme(){
-  // saves with initials + date/time
   filename = initials + day() + hour() + minute() + second();
   if (second() != lastscreenshot) {
     saveCanvas(filename, 'jpg');
@@ -191,10 +177,7 @@ function saveme(){
   lastscreenshot = second();
 }
 
-/* Mouse hooks to manage undo snapshots */
 function mousePressed() {
-  // Take a snapshot BEFORE a new stroke (only for drawing tools)
-  // Skip for '+' (undo), 'x' (clear), 'p' (save)
   if (key !== '+' && key !== 'x' && key !== 'X' && key !== 'p' && key !== 'P') {
     pushUndo();
   }
