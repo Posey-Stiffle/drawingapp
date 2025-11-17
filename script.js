@@ -14,7 +14,7 @@ let rainbowHue = 0;
 
 // background cooldown
 let lastBgChange = 0;
-const BG_COOLDOWN = 5000; // 5 seconds
+const BG_COOLDOWN = 500; // 5 seconds
 
 function preload() {
   img = loadImage('https://dma-git.github.io/images/74.png');
